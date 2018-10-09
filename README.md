@@ -1,6 +1,6 @@
 # PHP form validation  
 
-###A mobile first layout with PHP validation  
+### A mobile first layout with PHP validation  
   
 How to validate a form using only PHP.  
 Includes the following:  
