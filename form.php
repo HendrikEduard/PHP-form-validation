@@ -1,49 +1,56 @@
-<?php  // define variables and set to empty values
+<?php  
+// Start the session to use the CSRF token
+session_start();
+// define variables and set to empty values
 $name_error = $email_error = $gender_error = $website_error = "";
-$name = $email = $gender = $comment = $website = "";
+$csrf_token = $name = $email = $gender = $comment = $website = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  if (empty($_POST["name"])) {
-    $name_error = "Name is required";
-  } else {
-    $name = clean($_POST["name"]);
-    // check if name only contains letters and whitespace
-    if (!preg_match("/^[a-zA-Z ]*$/",$name)) {
-      $name_error = "Only letters and white space allowed"; 
-    }
-  }
-  
-  if (empty($_POST["email"])) {
-    $email_error = "Email is required";
-  } else {
-    $email = clean($_POST["email"]);
-    // check if e-mail address is well-formed
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-      $email_error = "Invalid email format"; 
-    }
+  if ($_POST["csrf_token"] !== $_SESSION['token']) {
+    die('Your form has been submitted.');
   }
     
-  if (empty($_POST["website"])) {
-    $website = "";
-  } else {
-    $website = clean($_POST["website"]);
-    // check if URL address syntax is valid (this regular expression also allows dashes in the URL)
-    if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i",$website)) {
-      $website_error = "Invalid URL"; 
+    if (empty($_POST["name"])) {
+      $name_error = "Name is required";
+    } else {
+      $name = clean($_POST["name"]);
+      // check if name only contains letters and whitespace
+      if (!preg_match("/^[a-zA-Z ]*$/",$name)) {
+        $name_error = "Only letters and white space allowed"; 
+      }
     }
-  }
+    
+    if (empty($_POST["email"])) {
+      $email_error = "Email is required";
+    } else {
+      $email = clean($_POST["email"]);
+      // check if e-mail address is well-formed
+      if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $email_error = "Invalid email format"; 
+      }
+    }
+      
+    if (empty($_POST["website"])) {
+      $website = "";
+    } else {
+      $website = clean($_POST["website"]);
+      // check if URL address syntax is valid (this regular expression also allows dashes in the URL)
+      if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i",$website)) {
+        $website_error = "Invalid URL"; 
+      }
+    }
 
-  if (empty($_POST["comment"])) {
-    $comment = "";
-  } else {
-    $comment = clean($_POST["comment"]);
-  }
+    if (empty($_POST["comment"])) {
+      $comment = "";
+    } else {
+      $comment = clean($_POST["comment"]);
+    }
 
-  if (empty($_POST["gender"])) {
-    $gender_error = "Gender is required";
-  } else {
-    $gender = clean($_POST["gender"]);
-  }
+    if (empty($_POST["gender"])) {
+      $gender_error = "Gender is required";
+    } else {
+      $gender = clean($_POST["gender"]);
+    }
 }
 
 function clean($data) {
@@ -52,6 +59,9 @@ function clean($data) {
   $data = trim($data);
   return $data;
 }
+// Create the token
+$_SESSION['token'] = bin2hex(random_bytes(22));
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -87,6 +97,7 @@ function clean($data) {
     <input type="radio" name="gender" <?= ($gender=="male") ? "checked" : "";?> value="male">Male
     <span class="error">* <?=$gender_error;?></span>
     <br><br>
+    <input type="hidden" name="csrf_token" value="<?= $_SESSION['token']; ?>">
     <input type="submit" name="submit" value="Submit">  
   </form>
 <?php
